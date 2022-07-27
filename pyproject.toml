@@ -2,23 +2,25 @@
 authors = ["abersheeran <me@abersheeran.com>"]
 description = ""
 license = "Apache-2.0"
-name = "setup.py" # TODO
+name = "typeddict"
 readme = "README.md"
 version = "0.1.0"
 
-homepage = "https://github.com/abersheeran/setup.py" # TODO
-repository = "https://github.com/abersheeran/setup.py" # TODO
+homepage = "https://github.com/abersheeran/typeddict"
+repository = "https://github.com/abersheeran/typeddict"
 
 classifiers = [
   "Programming Language :: Python :: 3",
 ]
 
 packages = [
-  {include = "example"}, # TODO
+  {include = "typeddict"},
 ]
 
 [tool.poetry.dependencies]
 python = "^3.7"
+typing-extensions = ">=4.3.0"
+pydantic = "^1.9.1"
 
 [tool.poetry.dev-dependencies]
 black = "*"

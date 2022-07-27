@@ -4,7 +4,7 @@ from pathlib import Path
 
 here = Path(__file__).absolute().parent.parent
 
-package_name = "coolsql"
+package_name = "typeddict"
 
 
 def get_version(package: str = package_name) -> str:

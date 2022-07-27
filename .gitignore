@@ -102,3 +102,6 @@ ENV/
 
 # mkdocs
 site/
+
+# MacOS
+.DS_Store

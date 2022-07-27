@@ -1,6 +1,6 @@
 [tool.poetry]
 authors = ["abersheeran <me@abersheeran.com>"]
-description = ""
+description = "Use `TypedDict` replace pydantic definitions."
 license = "Apache-2.0"
 name = "typeddict"
 readme = "README.md"

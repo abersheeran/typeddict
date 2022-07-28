@@ -1,6 +1,6 @@
 # TypedDict
 
-Use `TypedDict` replace pydantic definitions.
+Use `TypedDict` replace [pydantic](https://pydantic-docs.helpmanual.io/) definitions.
 
 ## Why?
 

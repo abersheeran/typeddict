@@ -25,7 +25,7 @@ class Message(BaseModel):
     message: str
 
 
-@routes.http.get("/user")
+@routes.http.post("/user")
 async def create_user(
     ...
 ) -> Annotated[Message, JSONResponse[200, {}, Message]]:

@@ -1,4 +1,4 @@
-from typing import Type, TypeVar
+from typing import Dict, List, Tuple, Type, TypeVar
 
 import pytest
 from typing_extensions import Annotated, NotRequired, TypedDict
@@ -17,14 +17,14 @@ class Book(TypedDict):
 
 
 class A(TypedDict):
-    a: list[User]
-    b: dict[str, User]
-    c: tuple[User, ...]
+    a: List[User]
+    b: Dict[str, User]
+    c: Tuple[User, ...]
 
 
 class B(TypedDict):
-    a: list[tuple[Book]]
-    b: dict[str, tuple[Book, ...]]
+    a: List[Tuple[Book]]
+    b: Dict[str, Tuple[Book, ...]]
 
 
 T = TypeVar("T", bound=TypedDict)

@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Callable, Dict, List, Tuple, Type
+from typing import Any, Callable, Dict, Generic, List, Tuple, Type, TypeVar, Union
 
 from typing_extensions import (
     Annotated,
@@ -10,6 +10,8 @@ from typing_extensions import (
     get_origin,
     is_typeddict,
 )
+
+T = TypeVar("T")
 
 
 class Metadata(TypedDict, total=False):
@@ -44,7 +46,51 @@ def is_not_required(field_type: Any) -> bool:
     return get_origin(field_type) is NotRequired
 
 
-class ParseTypedDictAnnotations(metaclass=abc.ABCMeta):
+def recursive_parsing(field_type: T, call: Callable) -> T:
+    if is_typeddict(field_type):
+        return call(field_type)
+
+    origin_type = get_origin(field_type)
+    if origin_type is None:
+        return field_type
+    if origin_type is Annotated:
+        field_type, *options_list = get_args(field_type)
+        field_type = recursive_parsing(field_type, call)
+        return Annotated.__class_getitem__(tuple((field_type, *options_list)))  # type: ignore
+    if origin_type is list:
+        (field_type,) = get_args(field_type)
+        return list.__class_getitem__(recursive_parsing(field_type, call))  # type: ignore
+    if origin_type is dict:
+        key_type, value_type = get_args(field_type)
+        return dict.__class_getitem__(  # type: ignore
+            (recursive_parsing(key_type, call), recursive_parsing(value_type, call))
+        )
+    if origin_type is tuple:
+        field_types = get_args(field_type)
+        return tuple.__class_getitem__(  # type: ignore
+            tuple(recursive_parsing(t, call) for t in field_types)
+        )
+    if origin_type is set:
+        (field_type,) = get_args(field_type)
+        return set.__class_getitem__(recursive_parsing(field_type, call))  # type: ignore
+    if origin_type is frozenset:
+        (field_type,) = get_args(field_type)
+        return frozenset.__class_getitem__(recursive_parsing(field_type, call))  # type: ignore
+    if origin_type is Required:
+        (field_type,) = get_args(field_type)
+        return Required.__class_getitem__(recursive_parsing(field_type, call))  # type: ignore
+    if origin_type is NotRequired:
+        (field_type,) = get_args(field_type)
+        return NotRequired.__class_getitem__(recursive_parsing(field_type, call))  # type: ignore
+    if origin_type is Union:
+        field_types = get_args(field_type)
+        return Union.__getitem__(tuple(recursive_parsing(t, call) for t in field_types))  # type: ignore
+    raise NotImplementedError(
+        f"Unsupported type: {field_type}, it's origin type: {origin_type}"
+    )
+
+
+class ParseTypedDictAnnotations(Generic[T], metaclass=abc.ABCMeta):
     def handle_required_field(
         self, key: str, field_type: Any, options: Dict[str, Any]
     ) -> Tuple[str, Any, Dict[str, Any]]:
@@ -56,10 +102,12 @@ class ParseTypedDictAnnotations(metaclass=abc.ABCMeta):
         return (key, field_type, options)
 
     @abc.abstractmethod
-    def create_schema(self, name: str, fields: List[Tuple[str, Any, Dict[str, Any]]]):
+    def create_schema(
+        self, name: str, fields: List[Tuple[str, Any, Dict[str, Any]]]
+    ) -> T:
         raise NotImplementedError
 
-    def __call__(self, typeddict: Type[TypedDict]):
+    def __call__(self, typeddict: Type[TypedDict]) -> T:
         assert is_typeddict(typeddict)
 
         fields = []
@@ -73,7 +121,7 @@ class ParseTypedDictAnnotations(metaclass=abc.ABCMeta):
                 for option in options_list:
                     options.update(option)
 
-            fields.append((key, field_type, options))
+            fields.append(self.handle_required_field(key, field_type, options))
 
         for key in typeddict.__optional_keys__:
             field_type = typeddict.__annotations__.get(key)
@@ -85,6 +133,6 @@ class ParseTypedDictAnnotations(metaclass=abc.ABCMeta):
                 for option in options_list:
                     options.update(option)
 
-            fields.append((key, field_type, options))
+            fields.append(self.handle_not_required_field(key, field_type, options))
 
         return self.create_schema(typeddict.__name__, fields)

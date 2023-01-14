@@ -74,7 +74,7 @@ def recursive_parsing(field_type: Any, call: Callable) -> Any:
         if hasattr(list, "__class_getitem__"):
             return list.__class_getitem__(recursive_parsing(field_type, call))
         else:
-            return List.__class_getitem__(recursive_parsing(field_type, call))
+            return List.__getitem__(recursive_parsing(field_type, call))  # type: ignore
     if origin_type is dict:
         key_type, value_type = get_args(field_type)
         if hasattr(dict, "__class_getitem__"):
@@ -82,7 +82,7 @@ def recursive_parsing(field_type: Any, call: Callable) -> Any:
                 (recursive_parsing(key_type, call), recursive_parsing(value_type, call))
             )
         else:
-            return Dict.__class_getitem__(
+            return Dict.__getitem__(  # type: ignore
                 (recursive_parsing(key_type, call), recursive_parsing(value_type, call))
             )
     if origin_type is tuple:
@@ -92,7 +92,7 @@ def recursive_parsing(field_type: Any, call: Callable) -> Any:
                 tuple(recursive_parsing(t, call) for t in field_types)
             )
         else:
-            return Tuple.__class_getitem__(
+            return Tuple.__getitem__(  # type: ignore
                 tuple(recursive_parsing(t, call) for t in field_types)
             )
     if origin_type is set:
@@ -100,13 +100,13 @@ def recursive_parsing(field_type: Any, call: Callable) -> Any:
         if hasattr(set, "__class_getitem__"):
             return set.__class_getitem__(recursive_parsing(field_type, call))
         else:
-            return Set.__class_getitem__(recursive_parsing(field_type, call))
+            return Set.__getitem__(recursive_parsing(field_type, call))  # type: ignore
     if origin_type is frozenset:
         (field_type,) = get_args(field_type)
         if hasattr(frozenset, "__class_getitem__"):
             return frozenset.__class_getitem__(recursive_parsing(field_type, call))
         else:
-            return FrozenSet.__class_getitem__(recursive_parsing(field_type, call))
+            return FrozenSet.__getitem__(recursive_parsing(field_type, call))  # type: ignore
     if origin_type is Required:
         (field_type,) = get_args(field_type)
         return Required.__class_getitem__(recursive_parsing(field_type, call))  # type: ignore

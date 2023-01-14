@@ -22,6 +22,10 @@ UserModel = typeddict.to_pydantic(User)
 print(repr(UserModel.__signature__))
 print(repr(UserModel.parse_obj(user)))
 
+# Just use typeddict.cast without pydantic model
+user = typeddict.cast(User, {"name": "John", "age": 30, "unused-info": "....."})
+print(repr(user))
+
 book: Book = {"author": user}  # Type check, pass!
 print(repr(book))
 

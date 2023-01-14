@@ -70,3 +70,21 @@ BookModel = typeddict.to_pydantic(Book)
 print(repr(BookModel.__signature__))
 print(repr(BookModel.parse_obj(book)))
 ```
+
+### `cast`
+
+Sometimes you may not need a pydantic model, you can directly use typeddict to parse the data.
+
+```python
+import typeddict
+
+
+class User(TypedDict):
+    name: str
+    age: Annotated[int, Metadata(default=0), Extra(ge=0)]
+    email: NotRequired[Annotated[str, Extra(min_length=5, max_length=100)]]
+
+
+user = typeddict.cast(User, {"name": "John", "age": 30, "unused-info": "....."})
+print(repr(user))
+```

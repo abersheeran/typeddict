@@ -1,6 +1,8 @@
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type, TypeVar
+from typing import cast as typecast
 
 from pydantic import BaseModel, Field, create_model
+from typing_extensions import TypedDict
 
 from .fields import ParseTypedDictAnnotations, recursive_parsing
 
@@ -34,8 +36,18 @@ class ParseTypedDictToPydantic(ParseTypedDictAnnotations):
 _parse = ParseTypedDictToPydantic()
 
 
-def to_pydantic(typeddict: Any) -> Type[BaseModel]:
+def to_pydantic(typeddict: Type[TypedDict]) -> Type[BaseModel]:
     """
     Convert a TypedDict to a Pydantic model.
     """
     return _parse(typeddict)
+
+
+T = TypeVar("T", bound=TypedDict)
+
+
+def cast(typeddict: Type[T], value: Dict[Any, Any]) -> T:
+    """
+    Cast a Dict to a TypedDict.
+    """
+    return typecast(T, to_pydantic(typeddict).parse_obj(value).dict())
